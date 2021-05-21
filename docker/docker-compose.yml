@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+   container_name: db
+   image: postgres:12
+   restart: always
+   environment:
+       POSTGRES_PASSWORD: admin
+   ports:
+       - 15432:5432
+  symofny:
+    container_name: symfony
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    volumes:
+      - ./../:/var/www
+  nginx:
+    build:
+      context: ./nginx
+    volumes:
+      - ../:/var/www
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites/:/etc/nginx/sites-available
+      - ./nginx/conf.d/:/etc/nginx/conf.d
+      - ./logs:/var/log/nginx
+    depends_on:
+      - symofny
+    ports:
+      - "80:80"
